@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SonarQube 弱點掃描報告 - {{ project_key }}</title>
+<style>
+  :root {
+    --brand-1: #bca078;
+    --brand-2: #ab9577;
+    --brand-3: #9a8b76;
+    --brand-4: #898075;
+    --brand-5: #777574;
+    --brand-6: #666a73;
+    --brand-7: #556072;
+    --brand-8: #94bc78;
+    --brand-9: #78bca0;
+    --brand-10: #7894bc;
+    --brand-11: #a078bc;
+    --brand-12: #bc7894;
+    --bg: #fbf5ed;
+    --panel: #ffffff;
+    --text: #1f2330;
+    --muted: var(--brand-5);
+    --accent: linear-gradient(135deg, var(--brand-11), var(--brand-12));
+    --border: var(--brand-6);
+    --table-stripe: #f9fafb;
+    --sev-critical: linear-gradient(135deg, var(--brand-12), var(--brand-11));
+    --sev-major: linear-gradient(135deg, var(--brand-1), var(--brand-3));
+    --sev-minor: linear-gradient(135deg, var(--brand-8), var(--brand-9));
+    --sev-info: linear-gradient(135deg, var(--brand-10), var(--brand-11));
+  }
+
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body {
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', 'Helvetica Neue', Arial, 'PingFang TC', sans-serif;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 128px;
+  }
+
+  .hero h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: .3px;
+    color: #111827;
+  }
+
+  .meta {
+    font-size: 16px;
+    color: #111827;
+    margin-top: 4px;
+  }
+
+  .hero-card {
+    margin-bottom: 18px;
+  }
+
+  .badge-img {
+    height: 80px;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 18px 0 26px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.18);
+  }
+
+  .card h3 {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing:.4px;
+  }
+
+  .card .num {
+    font-size: 28px;
+    margin-top: 8px;
+    font-weight: 700;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 6px 0 12px;
+  }
+
+  .search {
+    flex: 1;
+  }
+
+  .issues {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .issue-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    page-break-inside: avoid;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    hyphens: none;
+  }
+
+  .issue-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .issue-key {
+    font-weight: 700;
+  }
+
+  .issue-rule {
+    color: var(--muted);
+  }
+
+  .issue-status {
+    margin-left: auto;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #eef2ff;
+  }
+
+  .issue-body {
+    display: grid;
+    gap: 6px;
+  }
+
+  .issue-body .row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 8px;
+    align-items: start;
+  }
+
+  .issue-body .lbl {
+    color: var(--muted);
+    font-size: 12px;
+    padding-top: 4px;
+  }
+
+  .issue-body .val {
+    white-space: normal;
+  }
+
+  .issue-body .val.path {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  .badge {
+    display:inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+  }
+
+  .sev-blocker, .sev-critical { background: var(--sev-critical); color: #fff; }
+  .sev-major { background: var(--sev-major); color: #1f2937; }
+  .sev-minor { background: var(--sev-minor); color: #0f172a; }
+  .sev-info { background: var(--sev-info); color: #0f172a; }
+  .sev-high { background: var(--sev-critical); color: #fff; }
+  .sev-medium { background: var(--sev-major); color: #1f2937; }
+  .sev-low { background: var(--sev-minor); color: #0f172a; }
+
+  .footer {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 14px 2px 40px;
+    text-align: right;
+  }
+
+  @media (max-width: 900px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+
+  @page { size: A4; margin: 12mm; }
+
+  @media print {
+    .hero { box-shadow: none; }
+    .card { box-shadow: none; }
+    * { box-shadow: none !important; }
+  }
+
+  .search input {
+    background-color: #eef2f7;
+    border: 1px solid var(--border);
+    color: #000000;
+    font-size: 14px;
+    font-weight: 500;
+    outline-offset: 2px;
+    padding: 6px 12px;
+    width: 100%;
+    max-width: none;
+    flex: 1;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="card hero-card">
+      <div class="hero">
+        <div class="hero-left">
+          <h1>SonarQube 弱點掃描報告</h1>
+          <div class="meta">Project: {{ project_key }}</div>
+        </div>
+        <div class="hero-right">
+          {% if badge_data_uri %}
+          <img class="badge-img" src="{{ badge_data_uri }}" alt="Quality Gate"/>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><h3>Total Issues</h3><div class="num">{{ total_issues }}</div></div>
+      <div class="card"><h3>Blocker/Critical</h3><div class="num">{{ critical_count }}</div></div>
+      <div class="card"><h3>Major/Medium</h3><div class="num">{{ major_count }}</div></div>
+      <div class="card"><h3>Minor/Low/Info</h3><div class="num">{{ minor_count }}</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search">
+        <input id="q" type="search" placeholder="輸入關鍵字以篩選（訊息、規則、元件…）">
+      </div>
+    </div>
+
+    <div class="issues">
+      {% for r in records %}
+        <div class='issue-card'>
+          <div class='issue-head'>
+            <span class='badge sev-{{ r.Severity|lower }}'>{{ r.Severity }}</span>
+            <span class='issue-key'>{{ r.Key }}</span>
+            <span class='issue-rule'>{{ r.Rule }}</span>
+            <span class='issue-status'>{{ r.Status }}</span>
+          </div>
+          <div class='issue-body'>
+            <div class='row'>
+              <span class='lbl'>Message</span>
+              <span class='val'>{{ r.Message }}</span>
+            </div>
+            <div class='row'>
+              <span class='lbl'>Component</span>
+              <span class='val path'>{{ r.Component | replace("/", "/<wbr>") | safe }}</span>
+            </div>
+            <div class='row'>
+              <span class='lbl'>Line</span>
+              <span class='val'>{{ r.Line }}</span>
+            </div>
+            <div class='row'>
+              <span class='lbl'>Type</span>
+              <span class='val'>{{ r.Type }}</span>
+            </div>
+            <div class='row'>
+              <span class='lbl'>Creation Date</span>
+              <span class='val'>{{ r["Creation Date"] }}</span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="footer">報告檔名：{{ report_name }}</div>
+  </div>
+
+<script>
+  const q = document.getElementById('q');
+  const cards = Array.from(document.querySelectorAll('.issue-card'));
+  q.addEventListener('input', () => {
+    const term = q.value.trim().toLowerCase();
+    cards.forEach(card => {
+      const hit = card.innerText.toLowerCase().includes(term);
+      card.style.display = hit ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+    "global_token":"sqa_1040bc398f301eebc136b31a2c633e623e40ae65",
+    "user_token":"squ_8d3fb331a4fabd2a5a5d24f0ac565137f51e023e",
+    "project_token":"",
+    "sonar_url":"http://localhost:9000",
+    "project_name":"anythingllm",
+    "report_name":"",
+    "project_branch":"",
+    "export_pdf":true,
+    "pdf_name":"",
+    "chrome_path": ""
+    
+}
